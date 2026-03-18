@@ -7,6 +7,8 @@ const state = {
   selectedGroupMembers: new Map(),
   replyTo: null,
   pendingFile: null,
+  pollTimer: null,
+  lastMessageId: null,
 };
 
 const els = {
@@ -525,3 +527,49 @@ setInterval(() => {
 }, 60_000);
 
 seedIfNeeded().then(bootstrap);
+
+function getLastMessageId(messages) {
+  if (!messages || !messages.length) return null;
+  return messages[messages.length - 1].message_id;
+}
+
+async function refreshActiveChatSilently() {
+  if (!state.activeChatId || document.body.dataset.mode !== 'app') return;
+
+  try {
+    const messagesData = await api(`/api/chats/${state.activeChatId}/messages`);
+    const nextMessages = messagesData.messages || [];
+    const nextLastMessageId = getLastMessageId(nextMessages);
+
+    if (nextLastMessageId !== state.lastMessageId) {
+      const wasNearBottom =
+        els.messageList.scrollHeight - els.messageList.scrollTop - els.messageList.clientHeight < 120;
+
+      state.messages = nextMessages;
+      state.lastMessageId = nextLastMessageId;
+      renderMessages();
+
+      if (wasNearBottom) {
+        els.messageList.scrollTop = els.messageList.scrollHeight;
+      }
+    }
+
+    await loadChats();
+  } catch (err) {
+    console.error('Auto refresh error:', err);
+  }
+}
+
+function startPolling() {
+  stopPolling();
+  state.pollTimer = setInterval(() => {
+    refreshActiveChatSilently();
+  }, 2500);
+}
+
+function stopPolling() {
+  if (state.pollTimer) {
+    clearInterval(state.pollTimer);
+    state.pollTimer = null;
+  }
+}
