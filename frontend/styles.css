@@ -256,3 +256,44 @@ textarea { resize: vertical; min-height: 76px; }
 .chat-card-side { display:flex; flex-direction:column; align-items:flex-end; gap:10px; min-width:72px; }
 .user-actions .btn { min-width: 170px; justify-content:center; }
 .btn { display:inline-flex; align-items:center; justify-content:center; }
+
+
+/* === FIX CHAT CARD LAYOUT === */
+.chat-card {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.chat-card-body {
+  min-width: 0;
+}
+
+.chat-card-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 60px;
+}
+
+.time-label {
+  white-space: nowrap;
+}
+
+/* mobile */
+@media (max-width: 640px) {
+  .chat-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-areas:
+      "avatar time"
+      "avatar body";
+  }
+}

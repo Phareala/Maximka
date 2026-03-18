@@ -138,28 +138,49 @@ function formatDate(iso) {
 
 function renderChatList() {
   const query = (els.sidebarSearchInput.value || '').trim().toLowerCase();
-  const visibleChats = state.chats.filter(chat => !query || (chat.title || '').toLowerCase().includes(query) || (chat.subtitle || '').toLowerCase().includes(query));
+
+  const visibleChats = state.chats.filter(chat =>
+    !query ||
+    (chat.title || '').toLowerCase().includes(query) ||
+    (chat.subtitle || '').toLowerCase().includes(query)
+  );
+
   els.sidebarChatList.innerHTML = visibleChats.map(chat => `
     <article class="chat-card ${chat.chat_id === state.activeChatId ? 'active' : ''}" data-chat-id="${chat.chat_id}">
-      <div class="chat-card-main">
-        ${chat.avatar_url ? `<div class="avatar"><img src="${chat.avatar_url}" alt="avatar"></div>` : `<div class="avatar">${escapeHtml((chat.title || 'Чат').slice(0,2).toUpperCase())}</div>`}
-        <div class="chat-card-body">
-          <div class="chat-card-title-row">
-            <div class="chat-card-title truncate">${escapeHtml(chat.title)}</div>
-          </div>
-          <div class="muted truncate">${escapeHtml(chat.subtitle || '')}</div>
-          <div class="truncate">${escapeHtml(chat.last_message || 'Пока пусто')}</div>
+      ${chat.avatar_url
+        ? `<div class="avatar"><img src="${chat.avatar_url}" alt="avatar"></div>`
+        : `<div class="avatar">${escapeHtml((chat.title || 'Чат').slice(0, 2).toUpperCase())}</div>`}
+
+      <div class="chat-card-body">
+        <div class="chat-card-title-row">
+          <div class="chat-card-title truncate">${escapeHtml(chat.title)}</div>
         </div>
+        <div class="muted truncate">${escapeHtml(chat.subtitle || '')}</div>
+        <div class="truncate">${escapeHtml(chat.last_message || 'Пока пусто')}</div>
       </div>
+
       <div class="chat-card-side">
-        ${chat.last_message_time ? `<div class="time-label">${formatDate(chat.last_message_time)}</div>` : ''}
-        ${chat.has_unread ? `<div class="unread-badge">${chat.unread_count}</div>` : ''}
+        ${chat.last_message_time
+          ? `<div class="time-label">${formatDate(chat.last_message_time)}</div>`
+          : ''}
+        ${chat.has_unread
+          ? `<div class="unread-badge">${chat.unread_count}</div>`
+          : ''}
       </div>
-    </article>`).join('') || '<div class="muted">Чатов пока нет</div>';
+    </article>
+  `).join('') || '<div class="muted">Чатов пока нет</div>';
 
   els.chatPlaceholder.classList.add('placeholder-state');
-  els.chatPlaceholder.innerHTML = `<div class="chat-list-view"><h2>Все чаты</h2><div class="muted">Выбери чат слева или найди человека во вкладке «Поиск».</div></div>`;
-  els.sidebarChatList.querySelectorAll('.chat-card').forEach(card => card.addEventListener('click', () => openChat(Number(card.dataset.chatId))));
+  els.chatPlaceholder.innerHTML = `
+    <div class="chat-list-view">
+      <h2>Все чаты</h2>
+      <div class="muted">Выбери чат слева или найди человека во вкладке «Поиск».</div>
+    </div>
+  `;
+
+  els.sidebarChatList
+    .querySelectorAll('.chat-card')
+    .forEach(card => card.addEventListener('click', () => openChat(Number(card.dataset.chatId))));
 }
 
 async function loadChats() {
