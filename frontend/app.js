@@ -11,12 +11,12 @@ const state = {
 
 const els = {
   authView: document.getElementById('authView'),
-  loginView: document.getElementById('loginView'),
-  registerView: document.getElementById('registerView'),
   appView: document.getElementById('appView'),
   toastContainer: document.getElementById('toastContainer'),
   showRegisterBtn: document.getElementById('showRegisterBtn'),
   showLoginBtn: document.getElementById('showLoginBtn'),
+  loginCard: document.getElementById('loginCard'),
+  registerCard: document.getElementById('registerCard'),
   registerForm: document.getElementById('registerForm'),
   loginForm: document.getElementById('loginForm'),
   navBar: document.getElementById('navBar'),
@@ -25,7 +25,7 @@ const els = {
   sidebarMe: document.getElementById('sidebarMe'),
   sidebarSearchInput: document.getElementById('sidebarSearchInput'),
   sidebarSearchBtn: document.getElementById('sidebarSearchBtn'),
-  sidebarSearchResults: document.getElementById('sidebarSearchResults'),
+  sidebarChatList: document.getElementById('sidebarChatList'),
   chatPlaceholder: document.getElementById('chatPlaceholder'),
   chatWorkspace: document.getElementById('chatWorkspace'),
   chatAvatar: document.getElementById('chatAvatar'),
@@ -95,14 +95,6 @@ function setMode(mode) {
   els.appView.classList.toggle('hidden', mode !== 'app');
 }
 
-function switchAuthView(view) {
-  const showLogin = view !== 'register';
-  els.loginView.classList.toggle('hidden', !showLogin);
-  els.loginView.classList.toggle('active', showLogin);
-  els.registerView.classList.toggle('hidden', showLogin);
-  els.registerView.classList.toggle('active', !showLogin);
-}
-
 function escapeHtml(v) {
   return (v || '').replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch]));
 }
@@ -118,6 +110,11 @@ function avatarMarkup(userLike, large = false) {
 function fillAvatarPreview(container, url, placeholder = 'Нет аватарки') {
   container.classList.remove('empty');
   container.innerHTML = url ? `<img src="${url}" alt="preview">` : `<span>${placeholder}</span>`;
+}
+
+function showAuthCard(which) {
+  els.loginCard.classList.toggle('hidden', which !== 'login');
+  els.registerCard.classList.toggle('hidden', which !== 'register');
 }
 
 function activatePage(page) {
@@ -140,31 +137,29 @@ function formatDate(iso) {
 }
 
 function renderChatList() {
-  const workspace = els.chatPlaceholder;
-  const container = workspace;
-  container.classList.remove('placeholder-state');
-  container.innerHTML = `<div class="chat-list-view">
-    <h2>Все чаты</h2>
-    <div class="muted">Личные и групповые беседы.</div>
-    <div class="list-column top-gap">${state.chats.map(chat => `
-      <article class="chat-card ${chat.chat_id === state.activeChatId ? 'active' : ''}" data-chat-id="${chat.chat_id}">
-        <div class="chat-card-main">
-          ${chat.avatar_url ? `<div class="avatar"><img src="${chat.avatar_url}" alt="avatar"></div>` : `<div class="avatar">${escapeHtml((chat.title || 'Чат').slice(0,2).toUpperCase())}</div>`}
-          <div class="chat-card-body">
-            <div class="chat-card-title-row">
-              <div class="chat-card-title truncate">${escapeHtml(chat.title)}</div>
-              <div class="time-label">${formatDate(chat.last_message_time)}</div>
-            </div>
-            <div class="muted truncate">${escapeHtml(chat.subtitle || '')}</div>
-            <div class="truncate">${escapeHtml(chat.last_message || '')}</div>
+  const query = (els.sidebarSearchInput.value || '').trim().toLowerCase();
+  const visibleChats = state.chats.filter(chat => !query || (chat.title || '').toLowerCase().includes(query) || (chat.subtitle || '').toLowerCase().includes(query));
+  els.sidebarChatList.innerHTML = visibleChats.map(chat => `
+    <article class="chat-card ${chat.chat_id === state.activeChatId ? 'active' : ''}" data-chat-id="${chat.chat_id}">
+      <div class="chat-card-main">
+        ${chat.avatar_url ? `<div class="avatar"><img src="${chat.avatar_url}" alt="avatar"></div>` : `<div class="avatar">${escapeHtml((chat.title || 'Чат').slice(0,2).toUpperCase())}</div>`}
+        <div class="chat-card-body">
+          <div class="chat-card-title-row">
+            <div class="chat-card-title truncate">${escapeHtml(chat.title)}</div>
           </div>
+          <div class="muted truncate">${escapeHtml(chat.subtitle || '')}</div>
+          <div class="truncate">${escapeHtml(chat.last_message || 'Пока пусто')}</div>
         </div>
-        <div>
-          ${chat.has_unread ? `<div class="unread-flag"></div><div class="unread-badge top-gap">${chat.unread_count}</div>` : ''}
-        </div>
-      </article>`).join('')}</div>
-  </div>`;
-  container.querySelectorAll('.chat-card').forEach(card => card.addEventListener('click', () => openChat(Number(card.dataset.chatId))));
+      </div>
+      <div class="chat-card-side">
+        ${chat.last_message_time ? `<div class="time-label">${formatDate(chat.last_message_time)}</div>` : ''}
+        ${chat.has_unread ? `<div class="unread-badge">${chat.unread_count}</div>` : ''}
+      </div>
+    </article>`).join('') || '<div class="muted">Чатов пока нет</div>';
+
+  els.chatPlaceholder.classList.add('placeholder-state');
+  els.chatPlaceholder.innerHTML = `<div class="chat-list-view"><h2>Все чаты</h2><div class="muted">Выбери чат слева или найди человека во вкладке «Поиск».</div></div>`;
+  els.sidebarChatList.querySelectorAll('.chat-card').forEach(card => card.addEventListener('click', () => openChat(Number(card.dataset.chatId))));
 }
 
 async function loadChats() {
@@ -254,7 +249,7 @@ async function openChat(chatId, skipListReload = false) {
   els.chatSubtitle.textContent = chat.subtitle || '';
   els.chatMeta.innerHTML = chat.chat_type === 'group'
     ? `<div>${chat.members.length} участников</div>`
-    : chat.members.map(m => `${m.display_name} · ${m.member_role}`).join('<br>');
+    : '';
   renderMessages();
 }
 
@@ -415,13 +410,14 @@ async function bootstrap() {
     state.me = data.user;
     state.settings = data.settings;
     setMode('app');
+    activatePage('chats');
     renderMeMini();
     applySettingsUI(state.settings);
     renderProfile();
     await loadChats();
-    await searchUsers(els.sidebarSearchResults, '');
   } catch {
     setMode('auth');
+    showAuthCard('login');
   }
 }
 
@@ -429,8 +425,8 @@ async function seedIfNeeded() {
   try { await api('/api/seed'); } catch {}
 }
 
-els.showRegisterBtn.addEventListener('click', () => switchAuthView('register'));
-els.showLoginBtn.addEventListener('click', () => switchAuthView('login'));
+els.showRegisterBtn.addEventListener('click', () => showAuthCard('register'));
+els.showLoginBtn.addEventListener('click', () => showAuthCard('login'));
 els.loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   try {
@@ -440,11 +436,11 @@ els.loginForm.addEventListener('submit', async (event) => {
     const meData = await api('/api/me');
     state.settings = meData.settings;
     setMode('app');
+    activatePage('chats');
     renderMeMini();
     applySettingsUI(state.settings);
     renderProfile();
     await loadChats();
-    await searchUsers(els.sidebarSearchResults, '');
     toast('Вход выполнен');
   } catch (err) {
     toast(err.message, 'error');
@@ -455,17 +451,13 @@ els.registerForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   try {
     const form = new FormData(els.registerForm);
-    const data = await api('/api/register', { method: 'POST', body: Object.fromEntries(form.entries()) });
-    state.me = data.user;
-    const meData = await api('/api/me');
-    state.settings = meData.settings;
-    setMode('app');
-    renderMeMini();
-    applySettingsUI(state.settings);
-    renderProfile();
-    await loadChats();
-    await searchUsers(els.sidebarSearchResults, '');
-    toast('Аккаунт создан');
+    const login = form.get('login');
+    await api('/api/register', { method: 'POST', body: Object.fromEntries(form.entries()) });
+    els.registerForm.reset();
+    els.loginForm.reset();
+    els.loginForm.querySelector('[name="login"]').value = login;
+    showAuthCard('login');
+    toast('Аккаунт создан. Теперь войди.');
   } catch (err) {
     toast(err.message, 'error');
   }
@@ -476,6 +468,7 @@ els.logoutBtn.addEventListener('click', async () => {
   state.me = null;
   state.activeChatId = null;
   setMode('auth');
+  showAuthCard('login');
 });
 
 els.navBar.addEventListener('click', (event) => {
@@ -484,7 +477,8 @@ els.navBar.addEventListener('click', (event) => {
   activatePage(btn.dataset.page);
 });
 
-els.sidebarSearchBtn.addEventListener('click', () => searchUsers(els.sidebarSearchResults, els.sidebarSearchInput.value.trim()));
+els.sidebarSearchBtn.addEventListener('click', renderChatList);
+els.sidebarSearchInput.addEventListener('input', renderChatList);
 els.globalSearchBtn.addEventListener('click', () => searchUsers(els.globalSearchResults, els.globalSearchInput.value.trim()));
 els.groupMemberSearch.addEventListener('input', () => searchUsers(els.groupMemberResults, els.groupMemberSearch.value.trim()));
 els.messageForm.addEventListener('submit', sendMessage);

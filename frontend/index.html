@@ -13,12 +13,12 @@
   <div id="toastContainer" class="toast-container"></div>
 
   <main id="authView" class="auth-shell">
-    <section class="auth-card card card-auth auth-view active" id="loginView">
+    <section id="loginCard" class="auth-card card card-auth">
       <div class="eyebrow">Максимка</div>
       <h1>Вход</h1>
       <p class="muted">Личные диалоги, группы, вложения и поиск сообщений.</p>
 
-      <form id="loginForm" class="stack-16 auth-form">
+      <form id="loginForm" class="stack-16">
         <label class="field">
           <span>Логин</span>
           <input type="text" name="login" autocomplete="username" required />
@@ -30,18 +30,16 @@
         <button class="btn btn-primary btn-wide" type="submit">Войти</button>
       </form>
 
-      <div class="auth-footer">
-        <span class="muted">Нет аккаунта?</span>
-        <button id="showRegisterBtn" class="link-btn" type="button">Открыть регистрацию</button>
-      </div>
+      <div class="auth-divider"></div>
+      <button id="showRegisterBtn" class="link-btn" type="button">Нет аккаунта? Зарегистрироваться</button>
     </section>
 
-    <section class="auth-card card card-auth auth-view hidden" id="registerView">
+    <section id="registerCard" class="auth-card card card-auth hidden">
       <div class="eyebrow">Максимка</div>
       <h1>Регистрация</h1>
-      <p class="muted">Создай отдельный аккаунт для входа в чат.</p>
+      <p class="muted">Создай отдельный аккаунт и потом войди в приложение.</p>
 
-      <form id="registerForm" class="stack-16 auth-form">
+      <form id="registerForm" class="stack-16">
         <label class="field">
           <span>Отображаемое имя</span>
           <input type="text" name="display_name" required />
@@ -57,10 +55,8 @@
         <button class="btn btn-primary btn-wide" type="submit">Создать аккаунт</button>
       </form>
 
-      <div class="auth-footer">
-        <span class="muted">Уже есть аккаунт?</span>
-        <button id="showLoginBtn" class="link-btn" type="button">Вернуться ко входу</button>
-      </div>
+      <div class="auth-divider"></div>
+      <button id="showLoginBtn" class="link-btn" type="button">Уже есть аккаунт? Вернуться ко входу</button>
     </section>
   </main>
 
@@ -82,13 +78,13 @@
         <aside class="sidebar card">
           <div class="profile-mini" id="sidebarMe"></div>
           <label class="field search-field compact-gap">
-            <span>Найти по логину или имени</span>
-            <input id="sidebarSearchInput" type="text" placeholder="Например, Максимка" />
+            <span>Фильтр чатов</span>
+            <input id="sidebarSearchInput" type="text" placeholder="Фильтр по названию чата" />
           </label>
           <button id="sidebarSearchBtn" class="btn btn-secondary btn-wide" type="button">Искать</button>
           <section class="section-box">
-            <div class="section-title">Пользователи</div>
-            <div id="sidebarSearchResults" class="list-column"></div>
+            <div class="section-title">Чаты</div>
+            <div id="sidebarChatList" class="list-column"></div>
           </section>
         </aside>
 
