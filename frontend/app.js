@@ -11,9 +11,12 @@ const state = {
 
 const els = {
   authView: document.getElementById('authView'),
+  loginView: document.getElementById('loginView'),
+  registerView: document.getElementById('registerView'),
   appView: document.getElementById('appView'),
   toastContainer: document.getElementById('toastContainer'),
   showRegisterBtn: document.getElementById('showRegisterBtn'),
+  showLoginBtn: document.getElementById('showLoginBtn'),
   registerForm: document.getElementById('registerForm'),
   loginForm: document.getElementById('loginForm'),
   navBar: document.getElementById('navBar'),
@@ -90,6 +93,14 @@ function setMode(mode) {
   document.body.dataset.mode = mode;
   els.authView.classList.toggle('hidden', mode !== 'auth');
   els.appView.classList.toggle('hidden', mode !== 'app');
+}
+
+function switchAuthView(view) {
+  const showLogin = view !== 'register';
+  els.loginView.classList.toggle('hidden', !showLogin);
+  els.loginView.classList.toggle('active', showLogin);
+  els.registerView.classList.toggle('hidden', showLogin);
+  els.registerView.classList.toggle('active', !showLogin);
 }
 
 function escapeHtml(v) {
@@ -418,7 +429,8 @@ async function seedIfNeeded() {
   try { await api('/api/seed'); } catch {}
 }
 
-els.showRegisterBtn.addEventListener('click', () => els.registerForm.classList.toggle('hidden'));
+els.showRegisterBtn.addEventListener('click', () => switchAuthView('register'));
+els.showLoginBtn.addEventListener('click', () => switchAuthView('login'));
 els.loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   try {
