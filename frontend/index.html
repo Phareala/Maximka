@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Максимка</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-mode="auth" data-theme="ocean">
+  <div class="page-glow glow-left"></div>
+  <div class="page-glow glow-right"></div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <main id="authView" class="auth-shell">
+    <section class="auth-card card card-auth">
+      <div class="eyebrow">Синий чат с градиентами</div>
+      <h1>Вход в Максимку</h1>
+      <p class="muted">Личные диалоги, группы, вложения и поиск сообщений.</p>
+
+      <form id="loginForm" class="stack-16">
+        <label class="field">
+          <span>Логин</span>
+          <input type="text" name="login" autocomplete="username" required />
+        </label>
+        <label class="field">
+          <span>Пароль</span>
+          <input type="password" name="password" autocomplete="current-password" required />
+        </label>
+        <button class="btn btn-primary btn-wide" type="submit">Войти</button>
+      </form>
+
+      <div class="auth-divider"></div>
+
+      <button id="showRegisterBtn" class="link-btn" type="button">Нет аккаунта? Зарегистрироваться</button>
+
+      <form id="registerForm" class="stack-16 hidden top-gap">
+        <label class="field">
+          <span>Отображаемое имя</span>
+          <input type="text" name="display_name" required />
+        </label>
+        <label class="field">
+          <span>Логин</span>
+          <input type="text" name="login" autocomplete="username" required />
+        </label>
+        <label class="field">
+          <span>Пароль</span>
+          <input type="password" name="password" autocomplete="new-password" required />
+        </label>
+        <button class="btn btn-primary btn-wide" type="submit">Создать аккаунт</button>
+      </form>
+    </section>
+  </main>
+
+  <main id="appView" class="app-shell hidden">
+    <header class="app-header card">
+      <div class="brand">Максимка</div>
+      <nav class="nav" id="navBar">
+        <button data-page="chats" class="nav-link active">Чаты</button>
+        <button data-page="group" class="nav-link">Группа</button>
+        <button data-page="search" class="nav-link">Поиск</button>
+        <button data-page="profile" class="nav-link">Профиль</button>
+        <button data-page="settings" class="nav-link">Настройки</button>
+        <button id="logoutBtn" class="nav-link nav-danger">Выход</button>
+      </nav>
+    </header>
+
+    <section id="pageChats" class="page active">
+      <div class="layout-grid">
+        <aside class="sidebar card">
+          <div class="profile-mini" id="sidebarMe"></div>
+          <label class="field search-field compact-gap">
+            <span>Найти по логину или имени</span>
+            <input id="sidebarSearchInput" type="text" placeholder="Например, Маришка или marishka" />
+          </label>
+          <button id="sidebarSearchBtn" class="btn btn-secondary btn-wide" type="button">Искать</button>
+          <section class="section-box">
+            <div class="section-title">Пользователи</div>
+            <div id="sidebarSearchResults" class="list-column"></div>
+          </section>
+        </aside>
+
+        <section class="content-panel card content-panel-chat">
+          <div id="chatPlaceholder" class="placeholder-state">
+            <h2>Все чаты</h2>
+            <p class="muted">Выбери существующий чат или начни новый диалог через поиск слева.</p>
+          </div>
+
+          <div id="chatWorkspace" class="hidden chat-workspace">
+            <div class="chat-head">
+              <div class="chat-head-main">
+                <div id="chatAvatar" class="avatar avatar-lg"></div>
+                <div>
+                  <h2 id="chatTitle"></h2>
+                  <div id="chatSubtitle" class="muted"></div>
+                </div>
+              </div>
+              <div id="chatMeta" class="chat-meta"></div>
+            </div>
+
+            <div id="messageList" class="message-list"></div>
+
+            <div id="replyBox" class="reply-box hidden"></div>
+            <div id="filePreviewBox" class="file-preview-box hidden"></div>
+
+            <form id="messageForm" class="message-composer">
+              <label class="attach-trigger" title="Добавить файл">
+                +
+                <input id="messageFileInput" type="file" hidden />
+              </label>
+              <textarea id="messageInput" rows="2" placeholder="Сообщение. Поддержка **жирного**, *курсива*, `моно` и @mention"></textarea>
+              <button class="btn btn-primary" type="submit">Отправить</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="pageGroup" class="page">
+      <div class="single-card-wrap">
+        <section class="card form-card">
+          <h2>Новая группа</h2>
+          <p class="muted">Создай групповой чат, задай описание и добавь участников.</p>
+          <form id="groupForm" class="stack-16">
+            <label class="field"><span>Название</span><input name="title" type="text" required /></label>
+            <label class="field"><span>Описание</span><textarea name="description" rows="3"></textarea></label>
+
+            <div class="avatar-editor two-cols">
+              <div>
+                <div class="subheading">Текущая аватарка группы</div>
+                <div id="groupAvatarPreview" class="avatar-preview empty">Нет аватарки</div>
+              </div>
+              <label class="field">
+                <span>Новая аватарка</span>
+                <input id="groupAvatarInput" name="avatar" type="file" accept="image/*" />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Поиск участников</span>
+              <input id="groupMemberSearch" type="text" placeholder="Имя или логин" />
+            </label>
+            <div id="groupMemberResults" class="picker-list"></div>
+            <div>
+              <div class="subheading">Выбраны</div>
+              <div id="groupSelectedMembers" class="chip-row"></div>
+            </div>
+            <button class="btn btn-primary btn-wide" type="submit">Создать группу</button>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <section id="pageSearch" class="page">
+      <div class="single-card-wrap">
+        <section class="card form-card">
+          <h2>Поиск</h2>
+          <p class="muted">Поиск людей работает по логину и отображаемому имени.</p>
+          <div class="search-row">
+            <input id="globalSearchInput" type="text" placeholder="Например, vivivi" />
+            <button id="globalSearchBtn" class="btn btn-primary" type="button">Искать</button>
+          </div>
+          <div id="globalSearchResults" class="list-column top-gap"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="pageProfile" class="page">
+      <div class="single-card-wrap">
+        <section class="card form-card">
+          <h2>Профиль</h2>
+          <form id="profileForm" class="stack-20">
+            <div class="avatar-editor two-cols align-start">
+              <div>
+                <div class="subheading">Текущая аватарка</div>
+                <div id="currentAvatarPreview" class="avatar-preview empty"></div>
+              </div>
+              <div>
+                <div class="subheading">Новая аватарка</div>
+                <div id="newAvatarPreview" class="avatar-preview empty">Выбери файл</div>
+              </div>
+            </div>
+            <label class="field"><span>Имя</span><input id="profileDisplayName" name="display_name" type="text" required /></label>
+            <div class="status-card">
+              <div class="subheading">Системный статус</div>
+              <div id="profileStatusText"></div>
+              <p class="muted">Онлайн ставится, пока есть активность. Через 5 минут бездействия переключается на «Не беспокоить». После выхода — «Не в сети».</p>
+            </div>
+            <label class="field"><span>Новая аватарка</span><input id="profileAvatarInput" name="avatar" type="file" accept="image/*" /></label>
+            <button class="btn btn-primary btn-wide" type="submit">Сохранить</button>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <section id="pageSettings" class="page">
+      <div class="settings-grid">
+        <section class="card settings-card">
+          <h3>Тема сайта</h3>
+          <label class="field">
+            <span>Режим</span>
+            <select id="settingThemeMode">
+              <option value="dark">Тёмная</option>
+              <option value="light">Светлая</option>
+              <option value="system">Системная</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Цветовая тема</span>
+            <select id="settingColorTheme">
+              <option value="ocean">Ocean</option>
+              <option value="sunset">Sunset</option>
+              <option value="violet">Violet</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="card settings-card">
+          <h3>Чтение</h3>
+          <label class="field">
+            <span>Размер шрифта</span>
+            <input id="settingFontSize" type="range" min="13" max="22" step="1" />
+          </label>
+          <div id="settingFontSizeValue" class="muted"></div>
+          <label class="field">
+            <span>Плотность интерфейса</span>
+            <select id="settingDensityMode">
+              <option value="compact">Компактный</option>
+              <option value="comfortable">Комфортный</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="card settings-card">
+          <h3>Уведомления</h3>
+          <label class="check"><input id="settingBrowserNotifications" type="checkbox" /> Браузерные уведомления</label>
+          <label class="check"><input id="settingSoundNotifications" type="checkbox" /> Звуковые уведомления</label>
+          <label class="check"><input id="settingToastNotifications" type="checkbox" /> Тосты в интерфейсе</label>
+        </section>
+
+        <section class="card settings-card">
+          <h3>Справка</h3>
+          <p class="muted">Поиск пользователей работает по логину и отображаемому имени. Для отправки файла нажми на плюс слева от поля сообщения. Фото и видео показываются в предпросмотре до отправки.</p>
+          <p class="muted">В профиле отображаются текущая и новая аватарка. Верхняя шапка появляется только после входа.</p>
+        </section>
+
+        <section class="card settings-card settings-card-wide">
+          <h3>О приложении</h3>
+          <p class="muted">«Максимка» — учебный веб-мессенджер с раздельными папками фронта и бэка. Здесь есть авторизация, личные чаты, групповые чаты, вложения, поиск, настройки интерфейса и системные статусы.</p>
+          <button id="saveSettingsBtn" class="btn btn-primary" type="button">Сохранить настройки</button>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
